@@ -9,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Services.Implementation;
+using Services.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +36,8 @@ namespace TechnicalAssignment
                     opt.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
 
+            services.AddScoped<ITransactionService, TransactionServices>();
+
             services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 
             services.AddAutoMapper(typeof(Startup));
@@ -52,8 +56,11 @@ namespace TechnicalAssignment
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseRouting();
 
+
+         
+            app.UseRouting();
+            app.UseHttpsRedirection();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapGet("/", async context =>

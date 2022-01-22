@@ -8,12 +8,12 @@ using System.Text;
 using Utility.Common;
 using Utility.Extension;
 using Utility.Response;
-using Utility.Enum;
 using Utility.Enums;
+using Services.Services;
 
 namespace Services.Implementation
 {
-    public class TransactionServices
+    public class TransactionServices : ITransactionService
     {
         private readonly IBaseRepository<Transaction> _transactionRepository;
         public TransactionServices(IBaseRepository<Transaction> transactionRepository)
