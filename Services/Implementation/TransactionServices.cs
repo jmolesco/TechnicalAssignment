@@ -57,12 +57,18 @@ namespace Services.Implementation
         public object GetAllTransaction(Pager page)
         {
             var records = _transactionRepository.Queryable().AsNoTracking().
-                Select(p => new {
+                Select(p => new
+                {
                     p.TransactionId,
-                    p.Amount,
-                    p.CurrencyCode,
+                    Payment = Convert.ToDecimal(p.Amount) + " " + p.CurrencyCode,
+                    Status = p.TransactionStatus.GetTransactionStatus().ToString(),
                     p.DateCreated,
-                    p.DateModified
+                    p.DateModified,
+                    p.CurrencyCode,
+                    p.TransactionStatus,
+                    p.Amount,
+                    TransactionDate = Convert.ToDateTime(p.TransactionDate).ToString("o"),
+                    TranDate = p.TransactionDate
                 });
 
             if (page.Keyword.HasValue())
@@ -74,14 +80,15 @@ namespace Services.Implementation
                 int value = Convert.ToInt32(page.FilterBy);
                 if ((int)EnumFilterBy.CurrencyCode == value )
                 {
-                    records = records.Where(p => p.CurrencyCode == page.FilterBy);
+                    records = records.Where(p => p.CurrencyCode == page.FilterByValue);
                 }
                 else if ((int)EnumFilterBy.DateRange == value)
                 {
-
-                }else if((int)EnumFilterBy.Status == value)
+                    records = records.Where(p => p.TranDate <= Convert.ToDateTime(page.FilterByValue));
+                }
+                else if((int)EnumFilterBy.Status == value)
                 {
-                    records = records.Where(p => p.CurrencyCode == page.FilterBy);
+                    records = records.Where(p => p.TransactionStatus == Convert.ToInt32(page.FilterByValue));
                 }
 
             }
@@ -103,5 +110,7 @@ namespace Services.Implementation
 
             return response;
         }
+        
+
     }
 }
