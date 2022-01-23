@@ -61,7 +61,7 @@ namespace Services.Implementation
                 {
                     p.TransactionId,
                     Payment = Convert.ToDecimal(p.Amount) + " " + p.CurrencyCode,
-                    Status = p.TransactionStatus.GetTransactionStatus().ToString(),
+                    Status = p.TransactionStatus.GetTransactionStatus().ToString().Substring(0,1),
                     p.DateCreated,
                     p.DateModified,
                     p.CurrencyCode,

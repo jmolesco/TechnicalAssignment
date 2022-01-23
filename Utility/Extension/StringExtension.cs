@@ -14,7 +14,8 @@ namespace Utility.Extension
 
         public static object GetTransactionStatus(this int stat)
         {
-            var status = (EnumTransactionStatus)stat;
+            int actualStat = (stat == 2 || stat == 4) ? 2 : (stat == 3 || stat == 5) ? 3 : 1;
+            var status = (EnumTransactionStatus)actualStat;
             return status;
         }
     }

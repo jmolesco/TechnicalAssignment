@@ -8,7 +8,10 @@ namespace Utility.Response
     {
         public GetAllResponse(int total)
         {
-
+            this.Total = total;
+            this.List = new List<object>();
+            this.CurrentPage = 1;
+            this.TotalPage = 1;
         }
 
         public GetAllResponse(int total, int currentPage, int recordDisplay)
