@@ -12,6 +12,11 @@ using System.Threading.Tasks;
 using System.Xml;
 using Utility.Common;
 using Utility.Response;
+using Utility.Enums;
+using CsvHelper;
+using System.Globalization;
+using CsvHelper.Configuration;
+using TechnicalAssignment.Model;
 
 namespace TechnicalAssignment.Controllers
 {
@@ -30,20 +35,45 @@ namespace TechnicalAssignment.Controllers
         }
 
         [HttpPost("InsertTransaction")]
-        public IActionResult InsertTransaction([FromForm] IFormFile file)
+        public IActionResult InsertTransaction([FromForm] TransactionModel model)
         {
-            UploadFileProcess(file);
-            var result = ReadXMLBasedUpload(file.FileName);
-           
-            var mappedSchool = _mapper.Map<Transaction>(result);
-            _transactionService.InsertTransaction(mappedSchool);
+            if (!ModelState.IsValid)
+            {
+                //Setting up the directory of file upload
+                var dir = string.Concat(_environment.ContentRootPath, @"\wwwroot\UploadedFile");
+                var path = Path.Combine(dir, model.file.FileName);
+                //File Upload process
+                UploadFileProcess(model.file, path);
+
+                List<TransactionModel> result = null;
+
+                //Check File Extension
+                string extension = Path.GetExtension(model.file.FileName).Replace(".", "").ToLower().ToString();
+                if (extension == "csv")
+                    result = ReadCSVBasedUpload(path);
+                else
+                    result = ReadXMLBasedUpload(path);
+
+
+
+
+                if (result.Count > 0)
+                {
+                    for (int i = 0; i < result.Count; i++)
+                    {
+                        var mappedSchool = _mapper.Map<Transaction>(result[i]);
+                        _transactionService.InsertTransaction(mappedSchool);
+                    }
+                }
+            }
+          
             return Ok(
                 new { Status = StatusResponse.OK }
             );
         }
 
         [HttpGet("GetAllTransaction")]
-        public IActionResult GetAllSchool([FromQuery] Pager page)
+        public IActionResult GetAllTransaction([FromQuery] Pager page)
         {
             var result = _transactionService.GetAllTransaction(page);
             return Ok(result);
@@ -55,33 +85,65 @@ namespace TechnicalAssignment.Controllers
             var result = "Success";
             return Ok(result);
         }
-        public Transaction ReadXMLBasedUpload(string fileName)
+        public List<TransactionModel> ReadXMLBasedUpload(string path)
         {
-            var result = new Transaction();
+            List<TransactionModel> tranList = new List<TransactionModel>();
             XmlDocument doc = new XmlDocument();
-            doc.Load(string.Concat(this._environment.ContentRootPath, "/UploadedFile/"));
-            foreach(XmlNode node in doc.SelectNodes("Transactions"))
+            doc.Load(path);
+            XmlNodeList nodeList = doc.DocumentElement.SelectNodes("/Transactions/Transaction");
+            foreach (XmlNode node in nodeList)
             {
-                result.TransactionId=node["id"].InnerText;
-                foreach(XmlNode node1 in node.SelectNodes("PaymentDetails"))
+                var result =new TransactionModel();
+                result.TransactionId = node.Attributes[0].Value;
+                String date = Convert.ToDateTime(node["TransactionDate"].InnerText).ToString("o");
+                result.TransactionDate = Convert.ToDateTime(date);
+                foreach (XmlNode node1 in node.SelectNodes("PaymentDetails"))
                 {
-                    result.Amount = Convert.ToDouble(node["Amount"].InnerText);
-                    result.CurrencyCode =node["CurrencyCode"].InnerText;
+                    result.Amount = Convert.ToDouble(node1.SelectSingleNode("Amount").InnerText);
+                    result.CurrencyCode = node1.SelectSingleNode("CurrencyCode").InnerText;
                 }
-                result.TransactionDate =DateTime.ParseExact(node["TransactionDate"].InnerText, "yyyy-MM-ddThh:mm:ss", null);
-                result.TransactionStatus = Convert.ToInt32(node["Status"].InnerText);
+                result.TransactionStatus = Convert.ToInt32(Enum.Parse(typeof(EnumTransactionStatus), node.SelectSingleNode("Status").InnerText));
+                tranList.Add(result);
             }
 
-            return result;
+            return tranList;
         }
-        
-        public void UploadFileProcess(IFormFile file)
+
+        public void UploadFileProcess(IFormFile file, string path)
         {
-            var dir = _environment.ContentRootPath;
-            using (var fileStream = new FileStream(Path.Combine(dir+"/UploadedFile",file.FileName), FileMode.Open))
+
+
+            using (var fileStream = new FileStream(path, FileMode.Create))
             {
                 file.CopyTo(fileStream);
             }
+        }
+
+        public List<TransactionModel> ReadCSVBasedUpload(string path)
+        {
+            List<TransactionModel> tranList = new List<TransactionModel>();
+            using (var reader = new StreamReader(path))
+            {
+
+                var csvConfig = new CsvConfiguration(CultureInfo.InvariantCulture)
+                {
+                    Delimiter=",",
+                    HasHeaderRecord = false
+                };
+
+                using (var csvReader = new CsvReader(reader, csvConfig))
+                {
+
+                    csvReader.Context.RegisterClassMap<CsvClassMapperModel>();
+                    while (csvReader.Read())
+                    {
+                        var record = csvReader.GetRecord<TransactionModel>();
+                        tranList.Add(record);
+                    }
+        
+                }
+            }
+            return tranList;
         }
     }
 }

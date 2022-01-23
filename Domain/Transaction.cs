@@ -6,6 +6,7 @@ namespace Domain
 {
     public class Transaction : BaseEntity
     {
+        
         public string TransactionId { get; set; }
         public double Amount { get; set; }
         public string CurrencyCode { get; set; }

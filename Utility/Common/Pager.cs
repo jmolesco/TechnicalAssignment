@@ -16,5 +16,6 @@ namespace Utility.Common
         public string Keyword { get; set; }
 
         public string FilterBy { get; set; }
+        public string FilterByValue { get; set; }
     }
 }
