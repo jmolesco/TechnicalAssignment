@@ -1,6 +1,4 @@
-﻿using CsvHelper.Configuration.Attributes;
-using Domain;
-using Microsoft.AspNetCore.Http;
+﻿using Domain;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +8,6 @@ namespace TechnicalAssignment.Model
 {
     public class TransactionModel : Transaction
     {
-        public IFormFile file { get; set; }
+
     }
 }
