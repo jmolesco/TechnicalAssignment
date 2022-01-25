@@ -47,7 +47,16 @@ namespace TechnicalAssignment
 
             services.AddAutoMapper(typeof(Startup));
             services.AddControllers();
-
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(
+                    builder =>
+                    {
+                        builder.WithOrigins( "http://localhost:3000")
+                                            .AllowAnyHeader()
+                                            .AllowAnyMethod();
+                    });
+            }); // Make sure you call this previous to AddMvc
             services.AddMvc(opt =>
             {
                 opt.Filters.Add(typeof(ValidateModelStateFilter));
@@ -68,6 +77,10 @@ namespace TechnicalAssignment
 
             app.UseRouting();
             app.UseHttpsRedirection();
+        
+            app.UseCors(
+                options => options.WithOrigins("http://example.com").AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()
+            );
             app.UseEndpoints(endpoints =>
             {
                 //endpoints.MapGet("/api/Transaction/SampleReturn",null);

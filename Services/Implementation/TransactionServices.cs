@@ -88,10 +88,12 @@ namespace Services.Implementation
                 }
                 else if((int)EnumFilterBy.Status == value)
                 {
-                    records = records.Where(p => p.TransactionStatus == Convert.ToInt32(page.FilterByValue));
+                    int addedValFilter = Convert.ToInt32(page.FilterByValue) == 2 ? 4 : Convert.ToInt32(page.FilterByValue) == 3 ? 5 : 1;
+                    records = records.Where(p => p.TransactionStatus == Convert.ToInt32(page.FilterByValue) || p.TransactionStatus==addedValFilter);
                 }
 
             }
+            records = records.OrderByDescending(x => x.DateCreated);
 
             GetAllResponse response = null;
             int maxRecord = 10;
@@ -111,6 +113,16 @@ namespace Services.Implementation
             return response;
         }
         
+
+        public object GetAllCurrency()
+        {
+            GetAllResponse response = null;
+            var records = _transactionRepository.Queryable().AsNoTracking()
+                .Select(s => s.CurrencyCode).Distinct();
+            response = new GetAllResponse(records.Count());
+            response.List.AddRange(records);
+            return response;
+        }
 
     }
 }

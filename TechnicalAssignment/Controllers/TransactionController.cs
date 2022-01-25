@@ -37,8 +37,8 @@ namespace TechnicalAssignment.Controllers
         [HttpPost("InsertTransaction")]
         public IActionResult InsertTransaction([FromForm] TransactionModel model)
         {
-            if (!ModelState.IsValid)
-            {
+
+
                 //Setting up the directory of file upload
                 var dir = string.Concat(_environment.ContentRootPath, @"\wwwroot\UploadedFile");
                 var path = Path.Combine(dir, model.file.FileName);
@@ -65,7 +65,7 @@ namespace TechnicalAssignment.Controllers
                         _transactionService.InsertTransaction(mappedSchool);
                     }
                 }
-            }
+            
           
             return Ok(
                 new { Status = StatusResponse.OK }
@@ -76,6 +76,13 @@ namespace TechnicalAssignment.Controllers
         public IActionResult GetAllTransaction([FromQuery] Pager page)
         {
             var result = _transactionService.GetAllTransaction(page);
+            return Ok(result);
+        }
+
+        [HttpGet("GetCurrency")]
+        public IActionResult GetCurrency()
+        {
+            var result = _transactionService.GetAllCurrency();
             return Ok(result);
         }
 

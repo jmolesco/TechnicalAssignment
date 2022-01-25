@@ -13,5 +13,6 @@ namespace Services.Services
         void DeleteTransaction(string id);
         Transaction GetTransaction(String id);
         object GetAllTransaction(Pager page);
+        object GetAllCurrency();
     }
 }
